@@ -1,6 +1,7 @@
 class Setting {
-  static String host = 'localhost';
+  static String host = 'http://localhost';
  static String port = '8999';
+ static String API_KEY = "";
  
 
  static String GetHost() {

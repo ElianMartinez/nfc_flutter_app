@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ncf_flutter_app/src/widgets/drawer.dart';
+import 'package:ncf_flutter_app/src/pages/Config.dart';
+import 'package:ncf_flutter_app/src/pages/FormNcf.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -12,17 +14,12 @@ class MyApp extends StatelessWidget {
       title: 'NCF APP',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: Home(),
+      routes: {
+        '/': (context) => FormNcf(),
+        '/config' : (context) => ConfigW(),
+      },
+      initialRoute: '/',
     );
   }
 }
 
-class Home extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(
-        title: Text('NCF APP'),
-      ),
-      drawer: drawerW(),
-    );
-}

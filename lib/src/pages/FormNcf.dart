@@ -1,10 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'package:ncf_flutter_app/src/models/rncClass.dart';
-import 'package:ncf_flutter_app/src/provider/rncProvider.dart';
+import 'package:ncf_flutter_app/src/services/rncService.dart';
 import 'package:ncf_flutter_app/src/widgets/drawer.dart';
 
 class FormNcf extends StatefulWidget {
@@ -13,16 +9,53 @@ class FormNcf extends StatefulWidget {
 }
 
 class _FormNcfState extends State<FormNcf> {
+  final FocusNode rncFocusNode = FocusNode();
   TextEditingController rncC = TextEditingController();
   TextEditingController nombreC = TextEditingController();
+  bool _request = false;
   String rncError = "";
   List<MPay> _mpay = [];
+  final RncService serviceRNC = new RncService();
+  @override
+  void dispose() {
+    rncFocusNode.dispose();
+    super.dispose();
+  }
+
+  Future<void> getRNC(String rnc) async {
+    if (rnc.length == 9 || rnc.length == 11) {
+      setState(() {
+        _request = true;
+      });
+      String resp = await serviceRNC.getRNC(int.parse(rnc));
+      if (resp != null && resp != 'void') {
+        rncError = '';
+        setState(() {
+          _request = false;
+        });
+        nombreC.text = resp;
+      } else if (resp == 'void') {
+        setState(() {
+          rncError = 'Ese RNC o Cédula no está registrado';
+          FocusScope.of(context).requestFocus(rncFocusNode);
+          _request = false;
+        });
+      } else {
+        setState(() {
+          _request = false;
+          rncError = "Error del servidor no encontrado";
+          FocusScope.of(context).requestFocus(rncFocusNode);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     _mpay.add(new MPay("Tarjeta", Icons.card_membership, false));
     _mpay.add(new MPay("Efectivo", Icons.money, false));
     final size = MediaQuery.of(context).size;
-    RNC dataRNC;
+
     return Scaffold(
         appBar: AppBar(
             title: Text(
@@ -38,6 +71,7 @@ class _FormNcfState extends State<FormNcf> {
                 child: Column(
                   children: [
                     TextFormField(
+                        focusNode: rncFocusNode,
                         controller: rncC,
                         autofocus: true,
                         decoration: InputDecoration(
@@ -63,24 +97,15 @@ class _FormNcfState extends State<FormNcf> {
                             setState(() {
                               this.rncError = "";
                             });
-                            print(rncError);
                           } else {
                             setState(() {
                               this.rncError = "Debe tener 9 u 11 caracteres";
                             });
                           }
-                          print(rncError);
                         },
                         onFieldSubmitted: (v) async {
-                          if (v != '' && v.length == 9 || v.length == 11) {
-                            dataRNC = await fetchRNC(int.parse(v));
-                            if (dataRNC.nombre != 'none') {
-                              nombreC.text = dataRNC.nombre;
-                            } else {}
-                          } else {
-                            return null;
-                          }
-
+                          
+                          await getRNC(v);
                           //Verificar el nombre Stream aqui del fetch
                         }),
                     SizedBox(
@@ -175,19 +200,25 @@ class _FormNcfState extends State<FormNcf> {
               ),
             ),
             Visibility(
-              visible: true,
-                child: Container(
+              visible: _request,
+              child: Container(
                 height: size.height,
                 width: size.width,
-                color:Color.fromRGBO(0, 0, 0, 0.5),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children : [
-                      CircularProgressIndicator(strokeWidth: 10.0,),
-                      SizedBox(height: 10.0),
-                      Text('Por favor espere....', style: TextStyle(fontSize: 25.0, color: Colors.white, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
+                color: Color.fromRGBO(0, 0, 0, 0.7),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      strokeWidth: 7.0,
+                    ),
+                    SizedBox(height: 20.0),
+                    Text('Por favor espere....',
+                        style: TextStyle(
+                            fontSize: 25.0,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
             ),
           ],
