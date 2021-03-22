@@ -9,21 +9,56 @@ class FormNcf extends StatefulWidget {
 }
 
 class _FormNcfState extends State<FormNcf> {
-  final FocusNode rncFocusNode = FocusNode();
+  // Importaciones de servicios
+  final RncService serviceRNC = new RncService();
+
+  // Controladores de los inputs
   TextEditingController rncC = TextEditingController();
   TextEditingController nombreC = TextEditingController();
+  TextEditingController montoC = TextEditingController();
+  //Focuses
+  final FocusNode rncFocusNode = FocusNode();
+  final FocusNode montoFocusNode = FocusNode();
+  bool validate = false;
+
+  //Variables globales
   bool _request = false;
   String rncError = "";
   List<MPay> _mpay = [];
-  final RncService serviceRNC = new RncService();
+  //variables que contienen info valiosa
+  int _rnc = 0;
+  int _methodPay = 0;
+  double _monto = 0.0;
+
   @override
   void dispose() {
     rncFocusNode.dispose();
+    montoFocusNode.dispose();
     super.dispose();
   }
+//Metodos funcionamiento interno
 
-  Future<void> getRNC(String rnc) async {
+ 
+   
+  
+  void _verificar(String valor) {
+    setState(() {
+      _monto = double.parse(valor);
+    });
+    if( _rnc != 0 && _methodPay != 0 && _monto != 0 ){
+        setState(() {
+          validate = true;
+        });
+    }else{
+      setState(() {
+          validate = true;
+        });
+    }
+  }
+
+  Future<void> _getRNC(String rnc) async {
     if (rnc.length == 9 || rnc.length == 11) {
+      nombreC.text = '';
       setState(() {
         _request = true;
       });
@@ -32,28 +67,53 @@ class _FormNcfState extends State<FormNcf> {
         rncError = '';
         setState(() {
           _request = false;
+          _rnc = int.parse(rnc);
         });
+
         nombreC.text = resp;
       } else if (resp == 'void') {
         setState(() {
           rncError = 'Ese RNC o Cédula no está registrado';
           FocusScope.of(context).requestFocus(rncFocusNode);
           _request = false;
+          _methodPay = 0;
+          _rnc = 0;
+          _mpay[0].isSelected = false;
+          _mpay[1].isSelected = false;
+          _monto = 0.0;
+          montoC.text = '';
         });
       } else {
         setState(() {
           _request = false;
           rncError = "Error del servidor no encontrado";
           FocusScope.of(context).requestFocus(rncFocusNode);
+          _methodPay = 0;
+          _rnc = 0;
+          _mpay[0].isSelected = false;
+          _mpay[1].isSelected = false;
+          _monto = 0.0;
+          montoC.text = '';
         });
       }
+    } else {
+      setState(() {
+        _methodPay = 0;
+        _rnc = 0;
+        _mpay[0].isSelected = false;
+        _mpay[1].isSelected = false;
+        _monto = 0.0;
+        montoC.text = '';
+      });
+      FocusScope.of(context).requestFocus(rncFocusNode);
     }
   }
-
   @override
   Widget build(BuildContext context) {
     _mpay.add(new MPay("Tarjeta", Icons.card_membership, false));
     _mpay.add(new MPay("Efectivo", Icons.money, false));
+
+     
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -90,9 +150,18 @@ class _FormNcfState extends State<FormNcf> {
                           LengthLimitingTextInputFormatter(11)
                         ],
                         style: TextStyle(
-                          fontSize: 40.0,
+                          fontSize: 25.0,
                         ),
                         onChanged: (valor) {
+                          nombreC.text = "";
+                          setState(() {
+                            _methodPay = 0;
+                            _rnc = 0;
+                            _mpay[0].isSelected = false;
+                            _mpay[1].isSelected = false;
+                            _monto = 0.0;
+                            montoC.text = '';
+                          });
                           if (valor.length == 9 || valor.length == 11) {
                             setState(() {
                               this.rncError = "";
@@ -104,8 +173,7 @@ class _FormNcfState extends State<FormNcf> {
                           }
                         },
                         onFieldSubmitted: (v) async {
-                          
-                          await getRNC(v);
+                          await _getRNC(v);
                           //Verificar el nombre Stream aqui del fetch
                         }),
                     SizedBox(
@@ -117,18 +185,23 @@ class _FormNcfState extends State<FormNcf> {
                     ),
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       RaisedButton(
-                          onPressed: () {
-                            setState(() {
-                              _mpay[1].isSelected = false;
-                              _mpay[0].isSelected = true;
-                            });
-                          },
+                          onPressed: _rnc > 0
+                              ? () {
+                                  setState(() {
+                                    _mpay[1].isSelected = false;
+                                    _mpay[0].isSelected = true;
+                                    _methodPay = 1;
+                                    FocusScope.of(context)
+                                        .requestFocus(montoFocusNode);
+                                  });
+                                }
+                              : null,
                           color: _mpay[0].isSelected
                               ? Color(0xFF3B4257)
                               : Colors.white,
                           child: Container(
-                            height: 130,
-                            width: 130,
+                            height: size.width < 475 ? size.width * 0.25 : 130,
+                            width: size.width < 475 ? size.width * 0.20 : 130,
                             alignment: Alignment.center,
                             margin: new EdgeInsets.all(15.0),
                             child: Column(
@@ -157,18 +230,23 @@ class _FormNcfState extends State<FormNcf> {
                         width: 50.0,
                       ),
                       RaisedButton(
-                          onPressed: () {
-                            setState(() {
-                              _mpay[1].isSelected = true;
-                              _mpay[0].isSelected = false;
-                            });
-                          },
+                          onPressed: _rnc > 0
+                              ? () {
+                                  setState(() {
+                                    _mpay[1].isSelected = true;
+                                    _mpay[0].isSelected = false;
+                                    _methodPay = 2;
+                                  });
+                                  FocusScope.of(context)
+                                      .requestFocus(montoFocusNode);
+                                }
+                              : null,
                           color: _mpay[1].isSelected
                               ? Color(0xFF3B4257)
                               : Colors.white,
                           child: Container(
-                            height: 130,
-                            width: 130,
+                            height: size.width < 475 ? size.width * 0.25 : 130,
+                            width: size.width < 475 ? size.width * 0.20 : 130,
                             alignment: Alignment.center,
                             margin: new EdgeInsets.all(15.0),
                             child: Column(
@@ -194,7 +272,38 @@ class _FormNcfState extends State<FormNcf> {
                             ),
                           )),
                     ]),
-                    _inputMonto()
+                    _inputMonto(_verificar, montoFocusNode, montoC, _methodPay),
+                    SizedBox(height: 50.0,),
+                    Center(
+                      child: Container(
+                        width: 200.0,
+                        height: 50.0,
+                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10)),
+                        shape: BoxShape.rectangle,
+                        color: Colors.blue,
+                        boxShadow: [
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: Offset(-4,-4),
+                              blurRadius : 5,
+                              spreadRadius: 2
+                            ),
+                            BoxShadow(
+                              color: Colors.grey.shade300,
+                              offset: Offset(4,4),
+                              blurRadius: 5,
+                              spreadRadius: 1
+                            )
+
+                        ],
+                        ),
+                        child: FlatButton (
+                          onLongPress: validate ? ()=>{ } : null ,
+                          child: Text('ENVIAR', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w600, color: Colors.white),),
+
+                        ),
+                      )
+                    )
                   ],
                 ),
               ),
@@ -236,9 +345,10 @@ Widget _inputNombre(nC) {
       ),
       labelText: 'Nombre',
     ),
+    enabled: false,
     textInputAction: TextInputAction.next,
     style: TextStyle(
-      fontSize: 40.0,
+      fontSize: 25.0,
     ),
     readOnly: true,
     controller: nC,
@@ -246,14 +356,18 @@ Widget _inputNombre(nC) {
   );
 }
 
-Widget _inputMonto() {
+Widget _inputMonto(
+    Function func, FocusNode fn, TextEditingController controller, int mtp) {
   return TextField(
+    focusNode: fn,
+    controller: controller,
     autofocus: true,
     decoration: InputDecoration(
         icon: Icon(
-          Icons.search,
+          Icons.monetization_on_sharp,
           size: 50.0,
         ),
+        enabled: mtp != 0 ? true : false,
         hintText: 'Ingrese el Monto',
         labelText: 'Monto *',
         // errorText: snapshot.error,
@@ -262,11 +376,12 @@ Widget _inputMonto() {
     textInputAction: TextInputAction.next,
     inputFormatters: <TextInputFormatter>[
       FilteringTextInputFormatter.digitsOnly,
-      LengthLimitingTextInputFormatter(11)
+      LengthLimitingTextInputFormatter(16)
     ],
     style: TextStyle(
-      fontSize: 40.0,
+      fontSize: 25.0,
     ),
+    onChanged: (v) => {func(v)},
   );
 }
 

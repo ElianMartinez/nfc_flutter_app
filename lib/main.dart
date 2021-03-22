@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ncf_flutter_app/src/pages/Config.dart';
 import 'package:ncf_flutter_app/src/pages/FormNcf.dart';
+import 'package:ncf_flutter_app/src/pages/test.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
       routes: {
-        '/': (context) => FormNcf(),
+        '/': (context) => Test(),
         '/config' : (context) => ConfigW(),
       },
       initialRoute: '/',
