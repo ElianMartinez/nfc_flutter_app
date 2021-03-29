@@ -8,15 +8,17 @@ class SucursalesServices {
     final String baseURL = ip + ':' + Setting.GetPort() + "/";
     BaseOptions options = new BaseOptions(
         baseUrl: (baseURL),
-        receiveDataWhenStatusError: true,
+        receiveDataWhenStatusError: false,
         connectTimeout: 20 * 1000, // 60 seconds
         receiveTimeout: 60 * 1000 // 60 seconds
         );
     final Dio _dio = new Dio(options);
     
     final String path = "sucursales/";
+    print(baseURL + path);
     try { 
       Response response = await _dio.get(baseURL + path);
+      
         if (response.statusCode == 200) {
           if (response.data['res'] == 'ok') {
             Setting.setHost(ip);

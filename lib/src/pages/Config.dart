@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ncf_flutter_app/src/pages/bluetooth_search.dart';
 import 'package:ncf_flutter_app/src/services/sucursalesServices.dart';
 import 'package:ncf_flutter_app/src/setting/settings.dart';
-import 'package:ncf_flutter_app/src/widgets/drawer.dart';
 
 class ConfigW extends StatefulWidget {
   ConfigW({Key key}) : super(key: key);
@@ -14,6 +14,7 @@ class _ConfigWState extends State<ConfigW> {
   TextEditingController controller = TextEditingController();
   TextEditingController idC = TextEditingController();
   TextEditingController nameC = TextEditingController();
+  var namePrinter = TextEditingController();
   String errorID = null;
   bool _request = false;
   String errorIp = null;
@@ -28,10 +29,10 @@ class _ConfigWState extends State<ConfigW> {
       setState(() {
         _request = false;
       });
-      if (data == false ) {
+      if (data == false) {
         setState(() {
           errorIp = "Esa direccion no corresponde";
-        _request = false;
+          _request = false;
         });
       } else {
         setState(() {
@@ -49,6 +50,7 @@ class _ConfigWState extends State<ConfigW> {
     controller.text = await Setting.getHost();
     nameC.text = await Setting.getNameSucursal();
     idC.text = await Setting.getIdSucursal();
+    namePrinter.text = await Setting.getPrinterName();
   }
 
   void _guardar_dato() async {
@@ -57,7 +59,7 @@ class _ConfigWState extends State<ConfigW> {
       String name = await services.getSucursal(int.parse(idC.text));
       if (name != "false" && name != "error") {
         nameC.text = name != "ocupado" ? name : "";
-        setState(() { 
+        setState(() {
           errorID = null;
         });
       } else if (name == "false") {
@@ -81,7 +83,6 @@ class _ConfigWState extends State<ConfigW> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      drawer: drawerW(),
       appBar: AppBar(
         title: Text('Configuración'),
       ),
@@ -157,6 +158,46 @@ class _ConfigWState extends State<ConfigW> {
                           )),
                       onPressed: () {
                         _guardar_dato();
+                      },
+                    ),
+                  ),
+                  TextField(
+                      controller: namePrinter,
+                      decoration: InputDecoration(
+                        labelText: 'Nombre del printer',
+                        enabled: false,
+                        icon: Icon(Icons.business),
+                      ),
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.next),
+                  Container(
+                    margin: EdgeInsets.all(10.0),
+                    width: 160.0,
+                    color: Colors.blue,
+                    child: FlatButton(
+                      child: Row(children: [
+                        Text('Buscar Printer',
+                            style: TextStyle(
+                              color: Colors.white,
+                            )),
+                        SizedBox(
+                          width: 10.0,
+                        ),
+                        Icon(
+                          Icons.search,
+                          size: 25.0,
+                          color: Colors.white,
+                        )
+                      ]),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => BluetoothSearch()),
+                        );
                       },
                     ),
                   ),

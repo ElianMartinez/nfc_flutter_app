@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ncf_flutter_app/src/pages/FormNcf.dart';
-import 'package:ncf_flutter_app/src/pages/Config.dart';
 
 class drawerW extends StatefulWidget {
   drawerW({Key key}) : super(key: key);
@@ -15,18 +13,38 @@ class _drawerWState extends State<drawerW> {
     return Drawer(
       child: ListView(
         children: [
-          UserAccountsDrawerHeader(
-              accountName: Text('PRUEBA'),
-              accountEmail: Text('PRUEBA@GMAIL.COM')),
+          SizedBox(
+            height: 40.0,
+          ),
+          Center(
+              child: Text(
+            "NCF APP",
+            style: TextStyle(
+                fontSize: 30.0,
+                color: Colors.blue,
+                fontWeight: FontWeight.bold),
+          )),
+          SizedBox(
+            height: 40.0,
+          ),
           ListTile(
+            leading: Icon(
+              Icons.home,
+              color: Colors.blue,
+            ),
             title: Text(
               'Formulario',
-              style: TextStyle(fontSize: 20.0),
+              style: TextStyle(fontSize: 20.0, color: Colors.blue),
             ),
             onTap: () => {Navigator.of(context).pushNamed('/')},
           ),
+          SizedBox(
+            height: 20.0,
+          ),
           ListTile(
-            title: Text('Configuración', style: TextStyle(fontSize: 20.0)),
+            leading: Icon(Icons.settings, color: Colors.blue),
+            title: Text('Configuración',
+                style: TextStyle(fontSize: 20.0, color: Colors.blue)),
             onTap: () => {Navigator.of(context).pushNamed('/config')},
           ),
         ],

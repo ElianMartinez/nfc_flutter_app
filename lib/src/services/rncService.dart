@@ -5,7 +5,8 @@ import 'package:ncf_flutter_app/src/setting/settings.dart';
 class RncService {
   final Dio _dio = new Dio();
   Future<String> getRNC(int rnc) async {
-  final String baseURL = await Setting.getHost() + ':' + Setting.GetPort() + "/";
+    var urll = await Setting.getHost();
+  final String baseURL =  urll +  ':' + Setting.GetPort() + "/";
   print(baseURL);
     final String path = "rnc/get/" + rnc.toString();
     try {

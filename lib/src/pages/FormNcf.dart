@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ncf_flutter_app/src/models/DataTikect.dart';
+import 'package:ncf_flutter_app/src/pages/bluetooth_search.dart';
+import 'package:ncf_flutter_app/src/services/FacturaService.dart';
 import 'package:ncf_flutter_app/src/services/rncService.dart';
 import 'package:ncf_flutter_app/src/widgets/drawer.dart';
 
@@ -11,6 +14,7 @@ class FormNcf extends StatefulWidget {
 class _FormNcfState extends State<FormNcf> {
   // Importaciones de servicios
   final RncService serviceRNC = new RncService();
+  final FacturaServices facturaServices = new FacturaServices();
 
   // Controladores de los inputs
   TextEditingController rncC = TextEditingController();
@@ -33,26 +37,64 @@ class _FormNcfState extends State<FormNcf> {
   @override
   void dispose() {
     rncFocusNode.dispose();
-    montoFocusNode.dispose();
-    super.dispose();
+    montoFocusNode.dispose();   
   }
-//Metodos funcionamiento interno
 
- 
-   
-  
+  void borrar() {
+    setState(() {
+       _rnc = 0;
+   _methodPay = 0;
+   _monto = 0.0;
+   nombreC.text = "";
+   rncC.text = "";
+    montoC.text = "";
+    validate = false;
+    });
+  }
+
+//Metodos funcionamiento interno
+  void enviar() async {
+    setState(() {
+      _request = true;
+    });
+    DataTikect res = await facturaServices.Create_Factura(
+        _rnc.toString(), nombreC.text, _monto, _methodPay);
+    print(res);
+    setState(() {
+      _request = false;
+    });
+    if (res != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => BluetoothSearch(
+                  dataTikect: res,
+                )),
+      );
+    borrar();
+      
+    } else {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          content: Text("Ha ocurrido un error. Por favor intente de nuevo."),
+        ),
+      );
+    }
+  }
+
   void _verificar(String valor) {
     setState(() {
       _monto = double.parse(valor);
     });
-    if( _rnc != 0 && _methodPay != 0 && _monto != 0 ){
-        setState(() {
-          validate = true;
-        });
-    }else{
+    if (_rnc != 0 && _methodPay != 0 && _monto != 0) {
       setState(() {
-          validate = true;
-        });
+        validate = true;
+      });
+    } else {
+      setState(() {
+        validate = false;
+      });
     }
   }
 
@@ -108,12 +150,12 @@ class _FormNcfState extends State<FormNcf> {
       FocusScope.of(context).requestFocus(rncFocusNode);
     }
   }
+
   @override
   Widget build(BuildContext context) {
     _mpay.add(new MPay("Tarjeta", Icons.card_membership, false));
     _mpay.add(new MPay("Efectivo", Icons.money, false));
 
-     
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -273,37 +315,41 @@ class _FormNcfState extends State<FormNcf> {
                           )),
                     ]),
                     _inputMonto(_verificar, montoFocusNode, montoC, _methodPay),
-                    SizedBox(height: 50.0,),
+                    SizedBox(
+                      height: 50.0,
+                    ),
                     Center(
-                      child: Container(
-                        width: 200.0,
-                        height: 50.0,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10)),
+                        child: Container(
+                      width: 200.0,
+                      height: 50.0,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
                         shape: BoxShape.rectangle,
-                        color: Colors.blue,
+                        color: validate ? Colors.blue : Colors.grey,
                         boxShadow: [
-                            BoxShadow(
+                          BoxShadow(
                               color: Colors.white,
-                              offset: Offset(-4,-4),
-                              blurRadius : 5,
-                              spreadRadius: 2
-                            ),
-                            BoxShadow(
-                              color: Colors.grey.shade300,
-                              offset: Offset(4,4),
+                              offset: Offset(-4, -4),
                               blurRadius: 5,
-                              spreadRadius: 1
-                            )
-
+                              spreadRadius: 2),
+                          BoxShadow(
+                              color: Colors.grey.shade300,
+                              offset: Offset(4, 4),
+                              blurRadius: 5,
+                              spreadRadius: 1)
                         ],
+                      ),
+                      child: FlatButton(
+                        onPressed: validate ? () => {enviar()} : null,
+                        child: Text(
+                          'ENVIAR',
+                          style: TextStyle(
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white),
                         ),
-                        child: FlatButton (
-                          onLongPress: validate ? ()=>{ } : null ,
-                          child: Text('ENVIAR', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w600, color: Colors.white),),
-
-                        ),
-                      )
-                    )
+                      ),
+                    ))
                   ],
                 ),
               ),
