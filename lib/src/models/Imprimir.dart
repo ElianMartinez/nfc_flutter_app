@@ -24,6 +24,7 @@ class Imprimir {
     print(result.msg);
     return result.msg;
   }
+
   Future<Ticket> _ticket() async {
     final ticket = Ticket(PaperSize.mm58);
     ticket.emptyLines(1);

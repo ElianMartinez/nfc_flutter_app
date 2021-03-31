@@ -14,6 +14,7 @@ class _ConfigWState extends State<ConfigW> {
   TextEditingController controller = TextEditingController();
   TextEditingController idC = TextEditingController();
   TextEditingController nameC = TextEditingController();
+  TextEditingController apikeyC = TextEditingController();
   var namePrinter = TextEditingController();
   String errorID = null;
   bool _request = false;
@@ -51,6 +52,7 @@ class _ConfigWState extends State<ConfigW> {
     nameC.text = await Setting.getNameSucursal();
     idC.text = await Setting.getIdSucursal();
     namePrinter.text = await Setting.getPrinterName();
+    apikeyC.text = await Setting.getPrinterName();
   }
 
   void _guardar_dato() async {
@@ -198,6 +200,42 @@ class _ConfigWState extends State<ConfigW> {
                           MaterialPageRoute(
                               builder: (context) => BluetoothSearch()),
                         );
+                      },
+                    ),
+                  ),
+                  TextField(
+                      controller: apikeyC,
+                      decoration: InputDecoration(
+                        labelText: 'API KEY',
+                        icon: Icon(Icons.lock),
+                      ),
+                      enableSuggestions: false,
+                      autocorrect: false,
+                      obscureText: true,
+                      textInputAction: TextInputAction.next),
+                  Container(
+                    margin: EdgeInsets.all(10.0),
+                    width: 160.0,
+                    color: Colors.blue,
+                    child: FlatButton(
+                      child: Row(children: [
+                        Text('Buscar Printer',
+                            style: TextStyle(
+                              color: Colors.white,
+                            )),
+                        SizedBox(
+                          width: 10.0,
+                        ),
+                        Icon(
+                          Icons.search,
+                          size: 25.0,
+                          color: Colors.white,
+                        )
+                      ]),
+                      onPressed: () async {
+                          if(apikeyC.text.trim() != ""){
+                           Setting.setAPIKEY(apikeyC.text.trim());
+                          }
                       },
                     ),
                   ),

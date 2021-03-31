@@ -38,12 +38,16 @@ class SucursalesServices {
     final String baseURL =
         await Setting.getHost() + ':' + Setting.GetPort() + "/";
     final String path = "sucursales/get/" + id.toString();
-    BaseOptions options = new BaseOptions(
-        baseUrl: (baseURL),
-        receiveDataWhenStatusError: true,
-        connectTimeout: 20 * 1000, // 10 seconds
-        receiveTimeout: 60 * 1000 // 10 seconds
-        );
+     var api_key = await Setting.getAPIKEY();
+     var options = new BaseOptions(
+      receiveDataWhenStatusError: true,
+      connectTimeout: 10 * 1000, // 60 seconds
+      receiveTimeout: 60 * 1000, // 2min seconds
+      headers: 
+      {
+        "API-KEY":api_key
+      } 
+      );
     final Dio dio = new Dio(options);
     try {
       print(baseURL + path);

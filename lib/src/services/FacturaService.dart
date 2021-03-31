@@ -3,7 +3,7 @@ import 'package:ncf_flutter_app/src/models/DataTikect.dart';
 import 'package:ncf_flutter_app/src/setting/settings.dart';
 
 class FacturaServices {
-   Dio _dio;
+  Dio _dio;
   FacturaServices() {
     init();
   }
@@ -19,9 +19,8 @@ class FacturaServices {
     _dio = new Dio(options);
   }
 
-
-  Future<DataTikect> Create_Factura(String rnc, String nombre, double monto,
-       int id_m_p) async {
+  Future<DataTikect> Create_Factura(
+      String rnc, String nombre, double monto, int id_m_p) async {
     Map<String, dynamic> data = new Map<String, dynamic>();
     data = {
       "id_t_n": 2,
@@ -32,15 +31,13 @@ class FacturaServices {
       "id_metodo_pago": id_m_p,
     };
     final String path = "factura/create";
-  DataTikect res = DataTikect();
+    DataTikect res = DataTikect();
     try {
-     
       Response response = await _dio.post(path, data: data);
       if (response.statusMessage != null) {
         if (response.statusCode == 200) {
-         var data = response.data['data'];
+          var data = response.data['data'];
           //var fechaArray = data['fecha'].split("T")[0];
-       
           res.nombreCliente = nombre;
           res.nombreEmpresa = data['company_name'];
           res.rncCliente = rnc;
@@ -59,8 +56,8 @@ class FacturaServices {
         //No encuentra el servidor 404;
         return null;
       }
-    } on DioError  catch (ex) {
-      if(ex.type == DioErrorType.RECEIVE_TIMEOUT){
+    } on DioError catch (ex) {
+      if (ex.type == DioErrorType.RECEIVE_TIMEOUT) {
         print("Time out");
         return null;
       }

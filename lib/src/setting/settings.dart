@@ -76,4 +76,16 @@ class Setting {
     final data = preferences.getInt('PrinterType');
     return data;
   }
+  
+  //Setting API KEY
+  static Future<void> setAPIKEY(String type) async {
+    final preferences = await SharedPreferences.getInstance();
+    preferences.setString("api-key", type);
+  }
+
+  static Future<String> getAPIKEY() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final data = preferences.getString('api-key');
+    return data;
+  }
 }
