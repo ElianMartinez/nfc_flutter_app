@@ -1,5 +1,6 @@
 import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
 import 'package:flutter_bluetooth_basic/flutter_bluetooth_basic.dart';
+import 'package:intl/intl.dart';
 import 'package:ncf_flutter_app/src/models/DataTikect.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:ncf_flutter_app/src/setting/settings.dart';
@@ -11,7 +12,6 @@ class Imprimir {
   Imprimir(DataTikect dataTikect) {
     this.datatikect = dataTikect;
   }
-
   Future<String> startPrint() async {
     BluetoothDevice n = new BluetoothDevice();
     n.name = await Setting.getPrinterName();
@@ -21,7 +21,6 @@ class Imprimir {
     PrinterBluetooth printer = new PrinterBluetooth(n);
     _printerManager.selectPrinter(printer);
     PosPrintResult result = await _printerManager.printTicket(await _ticket());
-    print(result.msg);
     return result.msg;
   }
 
@@ -53,10 +52,10 @@ class Imprimir {
     );
     ticket.feed(1);
     ticket.row([
-      PosColumn(text: 'No:${datatikect.noFac}', width: 6),
+      PosColumn(text: 'No:${datatikect.noFac}', width: 3),
       PosColumn(
-        text: 'Fecha:${datatikect.fecha}',
-        width: 6,
+        text:'Fecha: ${datatikect.fecha}',
+        width: 9,
       ),
     ]);
 
@@ -110,7 +109,7 @@ class Imprimir {
           width: PosTextSize.size1),
       linesAfter: 0,
     );
-    ticket.text('Total: ${datatikect.monto}',
+    ticket.text('Total: ${NumberFormat.simpleCurrency().format(datatikect.monto)}',
         styles: PosStyles(
           bold: true,
           align: PosAlign.center,

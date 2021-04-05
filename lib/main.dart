@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ncf_flutter_app/src/pages/Config.dart';
 import 'package:ncf_flutter_app/src/pages/FormNcf.dart';
+import 'package:ncf_flutter_app/src/pages/history.dart';
 
 void main() {
   runApp(MyApp());
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => FormNcf(),
         '/config': (context) => ConfigW(),
+        '/history': (context) => History_Facture()
       },
       initialRoute: '/',
     );

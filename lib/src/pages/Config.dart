@@ -219,7 +219,7 @@ class _ConfigWState extends State<ConfigW> {
                     color: Colors.blue,
                     child: FlatButton(
                       child: Row(children: [
-                        Text('Buscar Printer',
+                        Text('Guardar KEY',
                             style: TextStyle(
                               color: Colors.white,
                             )),
@@ -227,7 +227,7 @@ class _ConfigWState extends State<ConfigW> {
                           width: 10.0,
                         ),
                         Icon(
-                          Icons.search,
+                          Icons.save,
                           size: 25.0,
                           color: Colors.white,
                         )

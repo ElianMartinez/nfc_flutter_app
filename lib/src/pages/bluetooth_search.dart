@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_basic/flutter_bluetooth_basic.dart';
 import 'package:ncf_flutter_app/src/models/DataTikect.dart';
@@ -84,10 +86,10 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
     });
     var impresor = Imprimir(dataTikect);
     var res = await impresor.startPrint();
-    print(res);
     setState(() {
       _request = false;
       dataImpri = res;
+     
       colorState = Colors.blue;
     });
     if (res == "Success") {
@@ -263,6 +265,7 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
 
     Navigator.pop(context);
   }
+
   void initPrinter() async {
     _request = true;
     await bluetoothManager.startScan(timeout: Duration(seconds: 4));

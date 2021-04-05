@@ -88,4 +88,16 @@ class Setting {
     final data = preferences.getString('api-key');
     return data;
   }
+
+  //Setting API 
+  static Future<void> setRecibo(String type) async {
+    final preferences = await SharedPreferences.getInstance();
+    preferences.setString("last-recibo", type);
+  }
+
+  static Future<String> getRecibo() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final data = preferences.getString('last-recibo');
+    return data;
+  }
 }

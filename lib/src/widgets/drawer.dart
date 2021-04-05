@@ -27,17 +27,7 @@ class _drawerWState extends State<drawerW> {
           SizedBox(
             height: 40.0,
           ),
-          ListTile(
-            leading: Icon(
-              Icons.home,
-              color: Colors.blue,
-            ),
-            title: Text(
-              'Formulario',
-              style: TextStyle(fontSize: 20.0, color: Colors.blue),
-            ),
-            onTap: () => {Navigator.of(context).pushNamed('/')},
-          ),
+          
           SizedBox(
             height: 20.0,
           ),
@@ -46,6 +36,15 @@ class _drawerWState extends State<drawerW> {
             title: Text('Configuración',
                 style: TextStyle(fontSize: 20.0, color: Colors.blue)),
             onTap: () => {Navigator.of(context).pushNamed('/config')},
+          ),
+          SizedBox(
+            height: 20.0,
+          ),
+          ListTile(
+            leading: Icon(Icons.history, color: Colors.blue),
+            title: Text('Historial',
+                style: TextStyle(fontSize: 20.0, color: Colors.blue)),
+            onTap: () => {Navigator.of(context).pushNamed('/history')},
           ),
         ],
       ),
