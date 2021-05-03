@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Setting {
-  static String port = "8999";
+
   static Future<String> getHost() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     final data = preferences.getString('ip');
@@ -11,10 +11,6 @@ class Setting {
   static Future<void> setHost(String ip) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString('ip', ip);
-  }
-
-  static String GetPort() {
-    return port;
   }
 
   static Future<String> getIdSucursal() async {

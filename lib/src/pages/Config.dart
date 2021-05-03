@@ -100,7 +100,7 @@ class _ConfigWState extends State<ConfigW> {
                       decoration: InputDecoration(
                         labelText: 'SERVIDOR',
                         errorText: errorIp,
-                        hintText: 'Ingrese la ip del servidor',
+                        hintText: 'Ingrese la ip del servidor: http://server',
                         icon: Icon(Icons.network_check_outlined),
                       ),
                       inputFormatters: <TextInputFormatter>[

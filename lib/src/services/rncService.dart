@@ -20,7 +20,7 @@ class RncService {
       
     _dio = new Dio(options);
     var urll = await Setting.getHost();
-    final String baseURL = urll + ':' + Setting.GetPort() + "/";
+    final String baseURL = urll + "/";
     final String path = "rnc/get/" + rnc.toString();
     try {
       Response response = await _dio.get(baseURL + path);

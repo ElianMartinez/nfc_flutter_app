@@ -4,7 +4,7 @@ import 'package:ncf_flutter_app/src/setting/settings.dart';
 class SucursalesServices {
   Future<bool> getSucursales(String ip) async {
     var apiKey = await Setting.getAPIKEY();
-    final String baseURL = ip + ':' + Setting.GetPort() + "/";
+    final String baseURL = ip + "/";
     BaseOptions options = new BaseOptions(
         baseUrl: (baseURL),
         receiveDataWhenStatusError: false,
@@ -34,7 +34,7 @@ class SucursalesServices {
   }
 
   Future<String> getSucursal(int id) async {
-    final String baseURL = await Setting.getHost() + ':' + Setting.GetPort() + "/";
+    final String baseURL = await Setting.getHost() + "/";
     final String path = "sucursales/get/" + id.toString();
     var api_key = await Setting.getAPIKEY();
     var options = new BaseOptions(
