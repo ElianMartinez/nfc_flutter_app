@@ -40,6 +40,7 @@ class FacturaServices {
     DataTikect res = DataTikect();
     try {
       Response response = await _dio.post(path, data: data);
+     
       if (response.statusMessage != null) {
         if (response.statusCode == 200) {
           DateTime dt = new DateTime.now();
@@ -65,6 +66,7 @@ class FacturaServices {
         return null;
       }
     } on DioError catch (ex) {
+     
       if (ex.type == DioErrorType.RECEIVE_TIMEOUT) {
         print("Time out");
         return null;
