@@ -105,7 +105,7 @@ class _ConfigWState extends State<ConfigW> {
                       ),
                       inputFormatters: <TextInputFormatter>[
                         FilteringTextInputFormatter.singleLineFormatter,
-                        LengthLimitingTextInputFormatter(25)
+                       
                       ],
                       keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.next),
