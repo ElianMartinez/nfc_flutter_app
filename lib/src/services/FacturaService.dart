@@ -46,7 +46,6 @@ class FacturaServices {
           DateTime dt = new DateTime.now();
           var fechaActual = DateFormat.yMd().add_jm().format(dt);
           var data = response.data['data'];
-          //var fechaArray = data['fecha'].split("T")[0];
           res.nombreCliente = nombre;
           res.nombreEmpresa = data['company_name'];
           res.rncCliente = rnc;
@@ -61,12 +60,14 @@ class FacturaServices {
           res.nombreTipo = data['nametipo'];
           await Setting.setRecibo(json.encode(res.toJson()));
           return res;
+        }else {
+           return null;
         }
+
       } else {
         return null;
       }
     } on DioError catch (ex) {
-     
       if (ex.type == DioErrorType.RECEIVE_TIMEOUT) {
         print("Time out");
         return null;

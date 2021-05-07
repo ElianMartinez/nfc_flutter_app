@@ -1,7 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_basic/flutter_bluetooth_basic.dart';
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:ncf_flutter_app/src/models/DataTikect.dart';
 import 'package:ncf_flutter_app/src/models/Imprimir.dart';
 import 'package:ncf_flutter_app/src/setting/settings.dart';
@@ -17,7 +15,7 @@ class BluetoothSearch extends StatefulWidget {
 class _BluetoothSearchState extends State<BluetoothSearch> {
   final DataTikect dataTikect;
   _BluetoothSearchState(this.dataTikect);
-  BluetoothManager bluetoothManager = BluetoothManager.instance;
+  BlueThermalPrinter bluetoothManager = BlueThermalPrinter.instance;
   List<BluetoothDevice> _devices;
   BluetoothDevice _device = null;
 
@@ -31,16 +29,15 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
     setState(() {
       statusMsg = null;
       colorState = Colors.blue;
+      _request = false;
     });
-    bluetoothManager.state.listen((val) {
-      print('state = $val');
+    bluetoothManager.onStateChanged().listen((val) {
       if (!mounted) return;
       if (val == 12) {
         setState(() {
           statusMsg = null;
           colorState = Colors.blue;
         });
-        initPrinter();
       } else if (val == 10) {
         print('off');
         setState(() {
@@ -59,7 +56,6 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
 
   @override
   void dispose() {
-    bluetoothManager.stopScan();
     super.dispose();
   }
 
@@ -73,8 +69,7 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
       ),
       body: Stack(
         children: [
-          statusMsg != null ? errorBluetooth() : listaDevices(context),
-          loader(),
+          statusMsg != null ? errorBluetooth() : listaDevices(context) 
         ],
       ),
     );
@@ -89,7 +84,7 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
     setState(() {
       _request = false;
       dataImpri = res;
-     
+
       colorState = Colors.blue;
     });
     if (res == "Success") {
@@ -97,37 +92,10 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
     } else {
       setState(() {
         _request = false;
-        dataImpri =
-            "Error del Printer. Por favor verifique que el Printer esté encendido. Si ya está encendido, entonces apaguelo y inicielo nuevamente.";
+        dataImpri = "Error del Printer. Por favor verifique que el Printer esté encendido o verifique que el bluetooth esté encendido. Si ya está encendido, entonces apaguelo y inicielo nuevamente.";
         colorState = Colors.red;
       });
     }
-  }
-
-  Widget loader() {
-    var visibility = Visibility(
-      visible: _request,
-      child: Container(
-        height: size.height,
-        width: size.width,
-        color: Color.fromRGBO(0, 0, 0, 0.7),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(
-              strokeWidth: 7.0,
-            ),
-            SizedBox(height: 20.0),
-            Text('Por favor espere....',
-                style: TextStyle(
-                    fontSize: 25.0,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600)),
-          ],
-        ),
-      ),
-    );
-    return visibility;
   }
 
   Widget errorBluetooth() {
@@ -204,36 +172,42 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
         ? mesgPrint(context)
         : Column(
             children: [
-              StreamBuilder<List<BluetoothDevice>>(
-                stream: bluetoothManager.scanResults,
+              FutureBuilder<List<BluetoothDevice>>(
+                future: bluetoothManager.getBondedDevices(),
                 initialData: [],
-                builder: (c, snapshot) => Column(
-                  children: snapshot.data
-                      .map((d) => ListTile(
-                            title: Text(d.name + " " + d.type.toString()),
-                            leading: d.type == 3
-                                ? Icon(
-                                    Icons.print,
-                                    color: Colors.green,
-                                    size: 30.0,
-                                  )
-                                : Icon(Icons.device_unknown),
-                            subtitle: Text(d.address),
-                            onTap: () async {
-                              setState(() {
-                                _device = d;
-                              });
-                            },
-                            trailing:
-                                _device != null && _device.address == d.address
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else {
+                    return Column(
+                      children: snapshot.data
+                          .map((d) => ListTile(
+                                title: Text(d.name + " " + d.type.toString()),
+                                leading: d.type == 3
+                                    ? Icon(
+                                        Icons.print,
+                                        color: Colors.green,
+                                        size: 30.0,
+                                      )
+                                    : Icon(Icons.device_unknown),
+                                subtitle: Text(d.address),
+                                onTap: () async {
+                                  setState(() {
+                                    _device = d;
+                                  });
+                                },
+                                trailing: _device != null &&
+                                        _device.address == d.address
                                     ? Icon(
                                         Icons.check,
                                         color: Colors.green,
                                       )
                                     : null,
-                          ))
-                      .toList(),
-                ),
+                              ))
+                          .toList(),
+                    );
+                  }
+                },
               ),
               Column(
                 children: [
@@ -264,24 +238,5 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
     await Setting.setPrinterType(_device.type);
 
     Navigator.pop(context);
-  }
-
-  void initPrinter() async {
-    _request = true;
-    await bluetoothManager.startScan(timeout: Duration(seconds: 4));
-    bluetoothManager.scanResults.listen((val) {
-      if (!mounted) return;
-      setState(() => _devices = val);
-      setState(() {
-        statusMsg = null;
-        colorState = Colors.blue;
-      });
-      if (_devices.isEmpty)
-        setState(() {
-          statusMsg = 'No hay dispositivos cerca!';
-          colorState = Colors.orange;
-        });
-    });
-    _request = false;
   }
 }
