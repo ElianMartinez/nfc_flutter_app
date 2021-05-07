@@ -5,6 +5,9 @@ import 'package:ncf_flutter_app/src/pages/bluetooth_search.dart';
 import 'package:ncf_flutter_app/src/services/FacturaService.dart';
 import 'package:ncf_flutter_app/src/services/rncService.dart';
 import 'package:ncf_flutter_app/src/widgets/drawer.dart';
+import 'dart:async';
+import 'dart:io';
+import 'package:connectivity/connectivity.dart';
 
 class FormNcf extends StatefulWidget {
   @override
@@ -15,6 +18,9 @@ class _FormNcfState extends State<FormNcf> {
   // Importaciones de servicios
   final RncService serviceRNC = new RncService();
   final FacturaServices facturaServices = new FacturaServices();
+
+  Map _source = {ConnectivityResult.none: false};
+  MyConnectivity _connectivity = MyConnectivity.instance;
 
   // Controladores de los inputs
   TextEditingController rncC = TextEditingController();
@@ -35,20 +41,30 @@ class _FormNcfState extends State<FormNcf> {
   double _monto = 0.0;
 
   @override
+  void initState() {
+    super.initState();
+    _connectivity.initialise();
+    _connectivity.myStream.listen((source) {
+      setState(() => _source = source);
+    });
+  }
+
+  @override
   void dispose() {
+    _connectivity.disposeStream();
     rncFocusNode.dispose();
-    montoFocusNode.dispose();   
+    montoFocusNode.dispose();
   }
 
   void borrar() {
     setState(() {
-       _rnc = 0;
-   _methodPay = 0;
-   _monto = 0.0;
-   nombreC.text = "";
-   rncC.text = "";
-    montoC.text = "";
-    validate = false;
+      _rnc = 0;
+      _methodPay = 0;
+      _monto = 0.0;
+      nombreC.text = "";
+      rncC.text = "";
+      montoC.text = "";
+      validate = false;
     });
   }
 
@@ -71,8 +87,7 @@ class _FormNcfState extends State<FormNcf> {
                   dataTikect: res,
                 )),
       );
-    borrar();
-      
+      borrar();
     } else {
       showDialog(
         context: context,
@@ -151,6 +166,8 @@ class _FormNcfState extends State<FormNcf> {
     }
   }
 
+  String string;
+
   @override
   Widget build(BuildContext context) {
     _mpay.add(new MPay("Tarjeta", Icons.card_membership, false));
@@ -158,226 +175,277 @@ class _FormNcfState extends State<FormNcf> {
 
     final size = MediaQuery.of(context).size;
 
+    switch (_source.keys.toList()[0]) {
+      case ConnectivityResult.none:
+        setState(() {
+          string = "Offline";
+        });
+        break;
+      case ConnectivityResult.mobile:
+        setState(() {
+          string = "Mobile: Online";
+        });
+        break;
+      case ConnectivityResult.wifi:
+        setState(() {
+          string = "WiFi: Online";
+        });
+    }
+
     return Scaffold(
         appBar: AppBar(
+            backgroundColor: string == "Offline" ? Colors.red : Colors.blue,
             title: Text(
-          'NCF FORMULARIO',
-          style: TextStyle(fontSize: 30.0),
-        )),
+              'NCF FORMULARIO',
+              style: TextStyle(fontSize: 30.0),
+            )),
         drawer: drawerW(),
-        body: Stack(
-          children: [
-            Container(
-              padding: EdgeInsets.all(30.0),
-              child: SingleChildScrollView(
+        body: string == "Offline"
+            ? Center(
                 child: Column(
-                  children: [
-                    TextFormField(
-                        focusNode: rncFocusNode,
-                        controller: rncC,
-                        autofocus: true,
-                        decoration: InputDecoration(
-                            icon: Icon(
-                              Icons.search,
-                              size: 50.0,
-                            ),
-                            errorText: rncError != "" ? rncError : null,
-                            hintText: 'Ingrese el RNC o Cédula',
-                            labelText: 'RNC - Cédula *',
-                            errorStyle: TextStyle(fontSize: 25.0)),
-                        keyboardType: TextInputType.number,
-                        textInputAction: TextInputAction.next,
-                        inputFormatters: <TextInputFormatter>[
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(11)
-                        ],
-                        style: TextStyle(
-                          fontSize: 25.0,
-                        ),
-                        onChanged: (valor) {
-                          nombreC.text = "";
-                          setState(() {
-                            _methodPay = 0;
-                            _rnc = 0;
-                            _mpay[0].isSelected = false;
-                            _mpay[1].isSelected = false;
-                            _monto = 0.0;
-                            montoC.text = '';
-                          });
-                          if (valor.length == 9 || valor.length == 11) {
-                            setState(() {
-                              this.rncError = "";
-                            });
-                          } else {
-                            setState(() {
-                              this.rncError = "Debe tener 9 u 11 caracteres";
-                            });
-                          }
-                        },
-                        onFieldSubmitted: (v) async {
-                          await _getRNC(v);
-                          //Verificar el nombre Stream aqui del fetch
-                        }),
-                    SizedBox(
-                      height: 30.0,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Container(
+                      margin: EdgeInsets.all(10.0),
+                      child: Text(
+                          "Esperando por conexión: Encienda el WIFI o los DATOS MOVILES", style: TextStyle(fontSize: 25.0, ),),
                     ),
-                    _inputNombre(nombreC),
-                    SizedBox(
-                      height: 30.0,
-                    ),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      RaisedButton(
-                          onPressed: _rnc > 0
-                              ? () {
+                  ),
+                  SizedBox(height: 40),
+                  CircularProgressIndicator(backgroundColor: Colors.red,),
+                ],
+              ))
+            : Stack(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(30.0),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          TextFormField(
+                              focusNode: rncFocusNode,
+                              controller: rncC,
+                              autofocus: true,
+                              decoration: InputDecoration(
+                                  icon: Icon(
+                                    Icons.search,
+                                    size: 50.0,
+                                  ),
+                                  errorText: rncError != "" ? rncError : null,
+                                  hintText: 'Ingrese el RNC o Cédula',
+                                  labelText: 'RNC - Cédula *',
+                                  errorStyle: TextStyle(fontSize: 25.0)),
+                              keyboardType: TextInputType.number,
+                              textInputAction: TextInputAction.next,
+                              inputFormatters: <TextInputFormatter>[
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(11)
+                              ],
+                              style: TextStyle(
+                                fontSize: 25.0,
+                              ),
+                              onChanged: (valor) {
+                                nombreC.text = "";
+                                setState(() {
+                                  _methodPay = 0;
+                                  _rnc = 0;
+                                  _mpay[0].isSelected = false;
+                                  _mpay[1].isSelected = false;
+                                  _monto = 0.0;
+                                  montoC.text = '';
+                                });
+                                if (valor.length == 9 || valor.length == 11) {
                                   setState(() {
-                                    _mpay[1].isSelected = false;
-                                    _mpay[0].isSelected = true;
-                                    _methodPay = 1;
-                                    FocusScope.of(context)
-                                        .requestFocus(montoFocusNode);
+                                    this.rncError = "";
+                                  });
+                                } else {
+                                  setState(() {
+                                    this.rncError =
+                                        "Debe tener 9 u 11 caracteres";
                                   });
                                 }
-                              : null,
-                          color: _mpay[0].isSelected
-                              ? Color(0xFF3B4257)
-                              : Colors.white,
-                          child: Container(
-                            height: size.width < 475 ? size.width * 0.25 : 130,
-                            width: size.width < 475 ? size.width * 0.20 : 130,
-                            alignment: Alignment.center,
-                            margin: new EdgeInsets.all(15.0),
-                            child: Column(
+                              },
+                              onFieldSubmitted: (v) async {
+                                await _getRNC(v);
+                                //Verificar el nombre Stream aqui del fetch
+                              }),
+                          SizedBox(
+                            height: 30.0,
+                          ),
+                          _inputNombre(nombreC),
+                          SizedBox(
+                            height: 30.0,
+                          ),
+                          Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Icon(
-                                  _mpay[0].icon,
-                                  color: _mpay[0].isSelected
-                                      ? Colors.white
-                                      : Colors.grey,
-                                  size: 60,
+                              children: [
+                                RaisedButton(
+                                    onPressed: _rnc > 0
+                                        ? () {
+                                            setState(() {
+                                              _mpay[1].isSelected = false;
+                                              _mpay[0].isSelected = true;
+                                              _methodPay = 1;
+                                              FocusScope.of(context)
+                                                  .requestFocus(montoFocusNode);
+                                            });
+                                          }
+                                        : null,
+                                    color: _mpay[0].isSelected
+                                        ? Color(0xFF3B4257)
+                                        : Colors.white,
+                                    child: Container(
+                                      height: size.width < 475
+                                          ? size.width * 0.25
+                                          : 130,
+                                      width: size.width < 475
+                                          ? size.width * 0.20
+                                          : 130,
+                                      alignment: Alignment.center,
+                                      margin: new EdgeInsets.all(15.0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(
+                                            _mpay[0].icon,
+                                            color: _mpay[0].isSelected
+                                                ? Colors.white
+                                                : Colors.grey,
+                                            size: 60,
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            _mpay[0].name,
+                                            style: TextStyle(
+                                                color: _mpay[0].isSelected
+                                                    ? Colors.white
+                                                    : Colors.grey),
+                                          )
+                                        ],
+                                      ),
+                                    )),
+                                SizedBox(
+                                  width: 50.0,
                                 ),
-                                SizedBox(height: 10),
-                                Text(
-                                  _mpay[0].name,
-                                  style: TextStyle(
-                                      color: _mpay[0].isSelected
-                                          ? Colors.white
-                                          : Colors.grey),
-                                )
+                                RaisedButton(
+                                    onPressed: _rnc > 0
+                                        ? () {
+                                            setState(() {
+                                              _mpay[1].isSelected = true;
+                                              _mpay[0].isSelected = false;
+                                              _methodPay = 2;
+                                            });
+                                            FocusScope.of(context)
+                                                .requestFocus(montoFocusNode);
+                                          }
+                                        : null,
+                                    color: _mpay[1].isSelected
+                                        ? Color(0xFF3B4257)
+                                        : Colors.white,
+                                    child: Container(
+                                      height: size.width < 475
+                                          ? size.width * 0.25
+                                          : 130,
+                                      width: size.width < 475
+                                          ? size.width * 0.20
+                                          : 130,
+                                      alignment: Alignment.center,
+                                      margin: new EdgeInsets.all(15.0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(
+                                            _mpay[1].icon,
+                                            color: _mpay[1].isSelected
+                                                ? Colors.white
+                                                : Colors.grey,
+                                            size: 60,
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            _mpay[1].name,
+                                            style: TextStyle(
+                                                color: _mpay[1].isSelected
+                                                    ? Colors.white
+                                                    : Colors.grey),
+                                          )
+                                        ],
+                                      ),
+                                    )),
+                              ]),
+                          _inputMonto(
+                              _verificar, montoFocusNode, montoC, _methodPay),
+                          SizedBox(
+                            height: 50.0,
+                          ),
+                          Center(
+                              child: Container(
+                            width: 200.0,
+                            height: 50.0,
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              shape: BoxShape.rectangle,
+                              color: validate ? Colors.blue : Colors.grey,
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.white,
+                                    offset: Offset(-4, -4),
+                                    blurRadius: 5,
+                                    spreadRadius: 2),
+                                BoxShadow(
+                                    color: Colors.grey.shade300,
+                                    offset: Offset(4, 4),
+                                    blurRadius: 5,
+                                    spreadRadius: 1)
                               ],
                             ),
-                          )),
-                      SizedBox(
-                        width: 50.0,
-                      ),
-                      RaisedButton(
-                          onPressed: _rnc > 0
-                              ? () {
-                                  setState(() {
-                                    _mpay[1].isSelected = true;
-                                    _mpay[0].isSelected = false;
-                                    _methodPay = 2;
-                                  });
-                                  FocusScope.of(context)
-                                      .requestFocus(montoFocusNode);
-                                }
-                              : null,
-                          color: _mpay[1].isSelected
-                              ? Color(0xFF3B4257)
-                              : Colors.white,
-                          child: Container(
-                            height: size.width < 475 ? size.width * 0.25 : 130,
-                            width: size.width < 475 ? size.width * 0.20 : 130,
-                            alignment: Alignment.center,
-                            margin: new EdgeInsets.all(15.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Icon(
-                                  _mpay[1].icon,
-                                  color: _mpay[1].isSelected
-                                      ? Colors.white
-                                      : Colors.grey,
-                                  size: 60,
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  _mpay[1].name,
-                                  style: TextStyle(
-                                      color: _mpay[1].isSelected
-                                          ? Colors.white
-                                          : Colors.grey),
-                                )
-                              ],
+                            child: FlatButton(
+                              onPressed: validate ? () => {enviar()} : null,
+                              child: Text(
+                                'ENVIAR',
+                                style: TextStyle(
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white),
+                              ),
                             ),
-                          )),
-                    ]),
-                    _inputMonto(_verificar, montoFocusNode, montoC, _methodPay),
-                    SizedBox(
-                      height: 50.0,
-                    ),
-                    Center(
-                        child: Container(
-                      width: 200.0,
-                      height: 50.0,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        shape: BoxShape.rectangle,
-                        color: validate ? Colors.blue : Colors.grey,
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.white,
-                              offset: Offset(-4, -4),
-                              blurRadius: 5,
-                              spreadRadius: 2),
-                          BoxShadow(
-                              color: Colors.grey.shade300,
-                              offset: Offset(4, 4),
-                              blurRadius: 5,
-                              spreadRadius: 1)
+                          ))
                         ],
                       ),
-                      child: FlatButton(
-                        onPressed: validate ? () => {enviar()} : null,
-                        child: Text(
-                          'ENVIAR',
-                          style: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ))
-                  ],
-                ),
-              ),
-            ),
-            Visibility(
-              visible: _request,
-              child: Container(
-                height: size.height,
-                width: size.width,
-                color: Color.fromRGBO(0, 0, 0, 0.7),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      strokeWidth: 7.0,
                     ),
-                    SizedBox(height: 20.0),
-                    Text('Por favor espere....',
-                        style: TextStyle(
-                            fontSize: 25.0,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ));
+                  ),
+                  Visibility(
+                    visible: _request,
+                    child: Container(
+                      height: size.height,
+                      width: size.width,
+                      color: Color.fromRGBO(0, 0, 0, 0.7),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            strokeWidth: 7.0,
+                          ),
+                          SizedBox(height: 20.0),
+                          Text('Por favor espere....',
+                              style: TextStyle(
+                                  fontSize: 25.0,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ));
   }
 }
 
@@ -429,6 +497,44 @@ Widget _inputMonto(
     ),
     onChanged: (v) => {func(v)},
   );
+}
+
+class MyConnectivity {
+  MyConnectivity._internal();
+
+  static final MyConnectivity _instance = MyConnectivity._internal();
+
+  static MyConnectivity get instance => _instance;
+
+  Connectivity connectivity = Connectivity();
+
+  StreamController controller = StreamController.broadcast();
+
+  Stream get myStream => controller.stream;
+
+  void initialise() async {
+    ConnectivityResult result = await connectivity.checkConnectivity();
+    _checkStatus(result);
+    connectivity.onConnectivityChanged.listen((result) {
+      _checkStatus(result);
+    });
+  }
+
+  void _checkStatus(ConnectivityResult result) async {
+    bool isOnline = false;
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        isOnline = true;
+      } else
+        isOnline = false;
+    } on SocketException catch (_) {
+      isOnline = false;
+    }
+    controller.sink.add({result: isOnline});
+  }
+
+  void disposeStream() => controller.close();
 }
 
 class MPay {
