@@ -52,7 +52,7 @@ class _ConfigWState extends State<ConfigW> {
     nameC.text = await Setting.getNameSucursal();
     idC.text = await Setting.getIdSucursal();
     namePrinter.text = await Setting.getPrinterName();
-    apikeyC.text = await Setting.getPrinterName();
+    apikeyC.text = await Setting.getAPIKEY();
   }
 
   void _guardar_dato() async {
