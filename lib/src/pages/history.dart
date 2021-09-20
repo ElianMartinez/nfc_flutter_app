@@ -130,7 +130,7 @@ class _History_FactureState extends State<History_Facture> {
         context,
         MaterialPageRoute(
             builder: (context) => BluetoothSearch(
-                  dataTikect: dtt,
+
                 )),
       );
       },

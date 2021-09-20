@@ -84,7 +84,7 @@ class _FormNcfState extends State<FormNcf> {
         context,
         MaterialPageRoute(
             builder: (context) => BluetoothSearch(
-                  dataTikect: res,
+                 
                 )),
       );
       borrar();
