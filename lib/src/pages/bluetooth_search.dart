@@ -19,12 +19,6 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
     initPlatformState();
   }
 
-  @override
-  void dispose() {
-    _disconnect();
-    super.dispose();
-  }
-
   Future<void> initPlatformState() async {
     List<BluetoothDevice> devices = [];
 
@@ -48,26 +42,27 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
     });
   }
 
-  void _connect() {
+  Future<void> _connect() async {
     if (_device == null) {
       setState(() {
         _devicesMsg = 'No device selected';
       });
     } else {
-      bluetooth.isConnected.then((isConnected) {
-        if (!isConnected) {
-          bluetooth.connect(_device).catchError((error) {
-            setState(() {
-              _devicesMsg = error.toString();
-            });
-          });
-        }
-      });
+      final a = await bluetooth.isConnected;
+      if (!a) {
+        final error = await bluetooth.connect(_device);
+        setState(() {
+          _devicesMsg = error.toString();
+        });
+      }
     }
   }
 
-  void _disconnect() {
-    bluetooth.disconnect();
+  Future<void> _disconnect() async {
+    final a = await bluetooth.disconnect();
+    setState(() {
+      _devicesMsg = a.toString();
+    });
   }
 
   @override
@@ -92,12 +87,14 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
                       });
                       savePrinter(context);
                     },
-                    onTap: () {
-                      _disconnect();
+                    onTap: () async {
                       setState(() {
                         _device = _devices[i];
                       });
-                      _connect();
+                      print(_device.name);
+                      await _connect();
+                      await _tesPrint();
+                      await _disconnect();
                     },
                   );
                 },
@@ -111,7 +108,7 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
     Navigator.pop(context);
   }
 
-  void _tesPrint() async {
+  Future<void> _tesPrint() async {
     //SIZE
     // 0- normal size text
     // 1- only bold text
@@ -121,28 +118,30 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
     // 0- ESC_ALIGN_LEFT
     // 1- ESC_ALIGN_CENTER
     // 2- ESC_ALIGN_RIGHT
-    bluetooth.isConnected.then((isConnected) {
-      if (isConnected) {
-        bluetooth.printCustom("HEADER",3,1);
-        bluetooth.printNewLine();
-        bluetooth.printNewLine();
-        bluetooth.printLeftRight("LEFT", "RIGHT",0);
-        bluetooth.printLeftRight("LEFT", "RIGHT",1);
-        bluetooth.printNewLine();
-        bluetooth.printLeftRight("LEFT", "RIGHT",2);
-        bluetooth.printCustom("Body left",1,0);
-        bluetooth.printCustom("Body right",0,2);
-        bluetooth.printNewLine();
-        bluetooth.printCustom("Terimakasih",2,1);
-        bluetooth.printNewLine();
-        bluetooth.printQRcode("Insert Your Own Text to Generate", 4,4, 5);
-        bluetooth.printNewLine();
-        bluetooth.printNewLine();
-        bluetooth.paperCut();
-        }
+    bool isConnected = await bluetooth.isConnected;
+    if (isConnected) {
+      await bluetooth.printCustom("HEADER", 3, 1);
+      await bluetooth.printNewLine();
+      await bluetooth.printNewLine();
+      await bluetooth.printLeftRight("LEFT", "RIGHT", 0);
+      await bluetooth.printLeftRight("LEFT", "RIGHT", 1);
+      await bluetooth.printNewLine();
+      await bluetooth.printLeftRight("LEFT", "RIGHT", 2);
+      await bluetooth.printCustom("Body left", 1, 0);
+      await bluetooth.printCustom("Body right", 0, 2);
+      await bluetooth.printNewLine();
+      await bluetooth.printCustom("Terimakasih", 2, 1);
+      await bluetooth.printNewLine();
+      await bluetooth.printQRcode("Insert Your Own Text to Generate", 200, 200, 5);
+      await bluetooth.printNewLine();
+      await bluetooth.printNewLine();
+      await bluetooth.printNewLine();
+      await bluetooth.printNewLine();
+      await bluetooth.printNewLine();
+    } else {
       setState(() {
-        _devicesMsg = isConnected.toString();
+        _devicesMsg = "Error";
       });
-    });
+    }
   }
 }
