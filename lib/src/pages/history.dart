@@ -26,7 +26,7 @@ class _History_FactureState extends State<History_Facture> {
     return Container(
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Historial de recibos"),
+          title: Text("Historial de Recibos"),
         ),
         body: Stack(children: [
           Column(

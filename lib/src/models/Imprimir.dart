@@ -21,6 +21,7 @@ class Imprimir {
     PrinterBluetooth printer = new PrinterBluetooth(n);
     _printerManager.selectPrinter(printer);
     PosPrintResult result = await _printerManager.printTicket(await _ticket());
+    
     return result.msg;
   }
 
@@ -117,7 +118,7 @@ class Imprimir {
           width: PosTextSize.size1,
         ));
     ticket.feed(1);
-    ticket.text('Gracias',
+    ticket.text('Gracias Por Su Compra.',
         styles: PosStyles(align: PosAlign.center, bold: true));
     ticket.cut();
     return ticket;

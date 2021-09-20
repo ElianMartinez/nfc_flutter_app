@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ncf_flutter_app/src/pages/FormNcf.dart';
 import 'package:ncf_flutter_app/src/pages/bluetooth_search.dart';
 import 'package:ncf_flutter_app/src/services/sucursalesServices.dart';
 import 'package:ncf_flutter_app/src/setting/settings.dart';
@@ -267,6 +268,44 @@ class _ConfigWState extends State<ConfigW> {
           ),
         ],
       ),
+    );
+  }
+
+  
+  Widget showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget cancelButton = FlatButton(
+      child: Text("No"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    Widget continueButton = FlatButton(
+      child: Text("Si"),
+      onPressed: () {
+        Navigator.of(context).pop();
+         Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => FormNcf()),
+      );
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Imprimir recibos"),
+      content: Text("Quieres imprimir este recibo? "),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
     );
   }
 }
