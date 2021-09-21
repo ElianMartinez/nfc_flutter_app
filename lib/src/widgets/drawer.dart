@@ -35,7 +35,7 @@ class _drawerWState extends State<drawerW> {
             leading: Icon(Icons.settings, color: Colors.blue),
             title: Text('Configuración',
                 style: TextStyle(fontSize: 20.0, color: Colors.blue)),
-            onTap: () => {Navigator.of(context).pushNamed('/config')},
+            onTap: () => {Navigator.of(context).pushNamed('/pass')},
           ),
           SizedBox(
             height: 20.0,

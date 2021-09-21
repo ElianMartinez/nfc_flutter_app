@@ -1,8 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ncf_flutter_app/src/models/DataTikect.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:ncf_flutter_app/src/models/printClass.dart';
-
 
 class PrintTicket extends StatefulWidget {
   final DataTikect dataTikect;
@@ -13,23 +13,46 @@ class PrintTicket extends StatefulWidget {
 }
 
 class _PrintTicketState extends State<PrintTicket> {
-   final DataTikect dataTikect;
+  final DataTikect dataTikect;
   _PrintTicketState(this.dataTikect);
   final printC = new PrintC();
- 
+
   String _devicesMsg;
   Color colorState;
 
   @override
-    void initState() {
+  void initState() {
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     void body() async {
-    String valor = await printC.printT(dataTikect);
-    Navigator.pop(context);
+      try {
+        await printC.printT(dataTikect);
+        Navigator.pop(context);
+      } on Exception catch (_) {
+        showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+                  title: Text(
+                      "La impresora está desconectada. Quiere intentar de nuevo."),
+                  actions: [
+                    FlatButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          body();
+                        },
+                        child: Text("Si")),
+                    FlatButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                        child: Text("No"))
+                  ],
+                ));
+      }
     }
 
     return Scaffold(
@@ -37,7 +60,7 @@ class _PrintTicketState extends State<PrintTicket> {
         title: Text('Imprimir Tikect'),
         backgroundColor: colorState,
       ),
-      body:  Container(
+      body: Container(
         child: StreamBuilder(
           stream: FlutterBlue.instance.state,
           builder: (context, AsyncSnapshot<dynamic> snapshot) {
@@ -47,7 +70,7 @@ class _PrintTicketState extends State<PrintTicket> {
               return Center(child: CircularProgressIndicator());
             } else {
               return Center(
-                child: Column(
+                  child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
@@ -64,6 +87,4 @@ class _PrintTicketState extends State<PrintTicket> {
       ),
     );
   }
-
-
 }

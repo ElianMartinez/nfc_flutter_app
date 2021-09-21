@@ -5,21 +5,21 @@ import 'package:ncf_flutter_app/src/setting/settings.dart';
 
 class PrintC {
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
-  String _devicesMsg;
+  String _devicesMsg ="";
   BluetoothDevice _device;
   PrintC();
 
   Future<void> _connect() async {
     if (_device == null) {
-      _devicesMsg = 'No device selected';
+      this._devicesMsg = 'No device selected';
     } else {
       bool a = await bluetooth.isConnected;
       if (!a) {
         try {
           await bluetooth.connect(_device);
-        } on Exception catch (error) {
-          _devicesMsg = "Error";
-          print("Respuetas de Connect");
+        } on Exception catch (_) {
+          throw Exception('Some arbitrary error');
+
         }
       }
     }
@@ -28,7 +28,7 @@ class PrintC {
   Future<void> _disconnect() async {
     final a = await bluetooth.disconnect();
     if (a.toString() == "false") {
-      _devicesMsg = a.toString();
+      this._devicesMsg = a.toString();
     }
   }
 
@@ -37,12 +37,13 @@ class PrintC {
         await Setting.getPrinterName(), await Setting.getPrinteAddress());
     _device = device;
     await _connect();
-    await _Print(tik);
+   String res = await _Print(tik);
     await _disconnect();
-    return _devicesMsg;
+    return res;
   }
 
-  Future<void> _Print(DataTikect ticket) async {
+  Future<String> _Print(DataTikect ticket) async {
+    String res = "";
     bool isConnected = await bluetooth.isConnected;
     if (isConnected) {
       await bluetooth.printNewLine();
@@ -63,14 +64,16 @@ class PrintC {
       await bluetooth.write("__________________________________________");
       await bluetooth.printNewLine();
       await bluetooth.printCustom(
-          "RD\$" + NumberFormat.simpleCurrency().format(ticket.monto), 2, 1);
+          "RD" + NumberFormat.simpleCurrency().format(ticket.monto), 2, 1);
       await bluetooth.printNewLine();
       await bluetooth.printCustom("Gracias por su compra.", 1, 1);
       await bluetooth.printNewLine();
       await bluetooth.printNewLine();
       await bluetooth.printNewLine();
     } else {
-      _devicesMsg = "La Impresora " + _device.name + " no esta concetada";
+        throw Exception('Some arbitrary error');
     }
+
+    
   }
 }

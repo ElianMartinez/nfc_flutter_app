@@ -86,7 +86,7 @@ class _FormNcfState extends State<FormNcf> {
         context,
         MaterialPageRoute(
             builder: (context) => PrintTicket(
-               dataTikect: res,
+                  dataTikect: res,
                 )),
       );
       borrar();
@@ -211,11 +211,17 @@ class _FormNcfState extends State<FormNcf> {
                     child: Container(
                       margin: EdgeInsets.all(10.0),
                       child: Text(
-                          "Esperando por conexión: Encienda el WIFI o los DATOS MOVILES", style: TextStyle(fontSize: 25.0, ),),
+                        "Esperando por conexión: Encienda el WIFI o los DATOS MOVILES",
+                        style: TextStyle(
+                          fontSize: 25.0,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: 40),
-                  CircularProgressIndicator(backgroundColor: Colors.red,),
+                  CircularProgressIndicator(
+                    backgroundColor: Colors.red,
+                  ),
                 ],
               ))
             : Stack(
