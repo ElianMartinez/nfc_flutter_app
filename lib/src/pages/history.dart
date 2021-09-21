@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ncf_flutter_app/src/models/DataTikect.dart';
+import 'package:ncf_flutter_app/src/pages/print.dart';
 import 'package:ncf_flutter_app/src/setting/settings.dart';
 
 import 'bluetooth_search.dart';
@@ -129,8 +130,8 @@ class _History_FactureState extends State<History_Facture> {
          Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => BluetoothSearch(
-
+            builder: (context) => PrintTicket(
+               dataTikect: dtt,
                 )),
       );
       },

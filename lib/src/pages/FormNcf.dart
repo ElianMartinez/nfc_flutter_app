@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ncf_flutter_app/src/models/DataTikect.dart';
 import 'package:ncf_flutter_app/src/pages/bluetooth_search.dart';
+import 'package:ncf_flutter_app/src/pages/print.dart';
 import 'package:ncf_flutter_app/src/services/FacturaService.dart';
 import 'package:ncf_flutter_app/src/services/rncService.dart';
 import 'package:ncf_flutter_app/src/widgets/drawer.dart';
@@ -79,12 +80,13 @@ class _FormNcfState extends State<FormNcf> {
     setState(() {
       _request = false;
     });
+
     if (res != null) {
       Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => BluetoothSearch(
-                 
+            builder: (context) => PrintTicket(
+               dataTikect: res,
                 )),
       );
       borrar();

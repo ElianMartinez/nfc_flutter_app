@@ -11,7 +11,6 @@ class DataTikect {
   String _telSucursal;
   String _rncEmpresa;
   String _nombreEmpresa;
-
   DataTikect();
   /* Begin Json methods*/
   Map<String, dynamic> toJson() => {
