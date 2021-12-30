@@ -41,15 +41,15 @@ class _PrintTicketState extends State<PrintTicket> {
                   FlatButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        body();
+                        Navigator.pop(context);
                       },
-                      child: Text("Si")),
+                      child: Text("No")),
                   FlatButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        Navigator.pop(context);
+                        body();
                       },
-                      child: Text("No"))
+                      child: Text("Si"))
                 ],
               ));
     }
