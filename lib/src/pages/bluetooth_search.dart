@@ -123,25 +123,37 @@ class _BluetoothSearchState extends State<BluetoothSearch> {
                         });
                         savePrinter(context);
                       },
-                      // onTap: () async {
-                      //   setState(() {
-                      //     _device = _devices[i];
-                      //     print(_device.name);
-                      //     _request = true;
-                      //   });
-                      //   await _connect();
-                      //   await _tesPrint();
-                      //   await _disconnect();
-                      //   setState(() {
-                      //     _request = false;
-                      //   });
-                      // },
+                      onTap: () async {
+                        setState(() {
+                          _device = _devices[i];
+                          print(_device.name);
+                          _request = true;
+                        });
+                        await _connect();
+                        await _tesPrint();
+                        await _disconnect();
+                        setState(() {
+                          _request = false;
+                        });
+                      },
                     );
                   },
                 ),
     );
   }
-
+  Future<void> _tesPrint() async{
+    bool isConnected = await bluetooth.isConnected;
+    if (isConnected) {
+      await bluetooth.printNewLine();
+      
+      await bluetooth.printCustom("Gracias por su compra.", 1, 1);
+      await bluetooth.printNewLine();
+      await bluetooth.printNewLine();
+      await bluetooth.printNewLine();
+    } else {
+        throw Exception('Some arbitrary error');
+    }
+  }
   void savePrinter(BuildContext context) async {
     await Setting.setPrinterName(_device.name);
     await Setting.setPrinteAddress(_device.address);
