@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ncf_flutter_app/src/models/Comprobantes_Models.dart';
 import 'package:ncf_flutter_app/src/models/DataTikect.dart';
 import 'package:ncf_flutter_app/src/pages/print.dart';
-import 'package:ncf_flutter_app/src/setting/settings.dart';
-
-import 'bluetooth_search.dart';
+import 'package:ncf_flutter_app/src/services/ComprobanteService.dart';
 
 class History_Facture extends StatefulWidget {
   const History_Facture({Key key}) : super(key: key);
@@ -14,11 +12,25 @@ class History_Facture extends StatefulWidget {
 }
 
 class _History_FactureState extends State<History_Facture> {
-  DataTikect dtt;
-  Future<DataTikect> getTiket() async {
-    var data = await Setting.getRecibo();
-    DataTikect dt = DataTikect.fromJson(json.decode(data));
-    return dt;
+  ComprobanteServives cs = new ComprobanteServives();
+  List<Comprobant> list;
+  bool loader = false;
+
+  void getBuscar() async {
+    setState(() {
+      loader = true;
+    });
+    Comprobante element = await cs.buscarComprobantes('0', false);
+    list = element.data;
+    setState(() {
+      loader = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getBuscar();
   }
 
   // String varl = "RD$";
@@ -54,26 +66,46 @@ class _History_FactureState extends State<History_Facture> {
                   ),
                 ),
               ),
-              FutureBuilder(
-                future: getTiket(),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if(snapshot.connectionState == ConnectionState.waiting){
-                  return CircularProgressIndicator();
-                  }else{
-                    dtt = snapshot.data;
-                  return historyItem(context);
-                  }
-                },
-              ),
             ],
           ),
+          loader
+              ? Center(child: CircularProgressIndicator())
+              : historyItem(context, list)
         ]),
       ),
     );
   }
 
-  Widget historyItem(BuildContext context) {
+  Widget historyItem(BuildContext context, List<Comprobant> dtt) =>
+      ListView.builder(
+          shrinkWrap: true,
+          scrollDirection: Axis.vertical,
+          itemCount: dtt.length,
+          itemBuilder: (BuildContext context, int index) {
+            return historialItem(context, dtt[index]);
+          });
+
+  Widget historialItem(BuildContext context, Comprobant dtt) {
+    DataTikect res = new DataTikect();
+    final mp = dtt.idMetodoPago == 2 ? "Efectivo" : "Tarjeta";
+
+    var fechaActual = DateFormat('dd/MM/yyyy KK:mm a').format(dtt.hora);
+    res.nombreCliente = dtt.nombreCompania;
+    res.nombreEmpresa = dtt.nombreSucursal;
+    res.rncCliente = dtt.rnc;
+    res.monto = dtt.montoEfectivo;
+    res.noFac = dtt.id;
+    res.ncf = dtt.ncf;
+    res.fecha = fechaActual;
+    res.metPago = mp;
+    res.rncEmpresa = dtt.rncEmpresa;
+    res.direccionSucursal = dtt.direccion;
+    res.telSucursal = dtt.telefono;
+    res.nombreTipo = 'CREDITO FISCAL';
+    res.fechaVence = DateFormat('dd/MM/yyyy').format(dtt.fechaVence);
+
     return Container(
+      width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
           color: Color.fromRGBO(245, 245, 245, 1),
           border:
@@ -83,18 +115,26 @@ class _History_FactureState extends State<History_Facture> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            dtt.rncCliente,
+            "RNC: " + dtt.rnc,
             style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.bold),
           ),
           Text(
-            dtt.nombreCliente,
+            "NCF: " + dtt.ncf,
             style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.bold),
           ),
-          Text( "RD"+NumberFormat.simpleCurrency().format(dtt.monto),
+          Text(
+            "Método.Pago: " + mp,
+            style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            dtt.nombreCompania,
+            style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.bold),
+          ),
+          Text("RD" + NumberFormat.simpleCurrency().format(dtt.monto),
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25.0)),
           Text(
-            dtt.fecha,
-            style: TextStyle(fontWeight: FontWeight.bold),
+            DateFormat('dd/MM/yyyy KK:mm a').format(dtt.hora),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
           ),
           TextButton(
               child: Row(
@@ -109,13 +149,13 @@ class _History_FactureState extends State<History_Facture> {
                   )
                 ],
               ),
-              onPressed: () => showAlertDialog(context)),
+              onPressed: () => showAlertDialog(context, res)),
         ],
       ),
     );
   }
 
-  Widget showAlertDialog(BuildContext context) {
+  Widget showAlertDialog(BuildContext context, DataTikect dtt) {
     // set up the buttons
     Widget cancelButton = FlatButton(
       child: Text("No"),
@@ -127,13 +167,13 @@ class _History_FactureState extends State<History_Facture> {
       child: Text("Si"),
       onPressed: () {
         Navigator.of(context).pop();
-         Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => PrintTicket(
-               dataTikect: dtt,
-                )),
-      );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => PrintTicket(
+                    dataTikect: dtt,
+                  )),
+        );
       },
     );
     // set up the AlertDialog

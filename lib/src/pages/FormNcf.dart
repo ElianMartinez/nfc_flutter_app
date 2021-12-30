@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ncf_flutter_app/src/models/DataTikect.dart';
-import 'package:ncf_flutter_app/src/pages/bluetooth_search.dart';
 import 'package:ncf_flutter_app/src/pages/print.dart';
 import 'package:ncf_flutter_app/src/services/FacturaService.dart';
 import 'package:ncf_flutter_app/src/services/rncService.dart';
@@ -61,6 +60,7 @@ class _FormNcfState extends State<FormNcf> {
     setState(() {
       _rnc = 0;
       _methodPay = 0;
+
       _monto = 0.0;
       nombreC.text = "";
       rncC.text = "";
@@ -132,7 +132,7 @@ class _FormNcfState extends State<FormNcf> {
         nombreC.text = resp;
       } else if (resp == 'void') {
         setState(() {
-          rncError = 'Ese RNC o Cédula no está registrado';
+          rncError = 'Ese RNC o cédula no está registrado';
           FocusScope.of(context).requestFocus(rncFocusNode);
           _request = false;
           _methodPay = 0;
@@ -145,7 +145,7 @@ class _FormNcfState extends State<FormNcf> {
       } else {
         setState(() {
           _request = false;
-          rncError = "Error del servidor no encontrado";
+          rncError = "Error del servidor, no encontrado!";
           FocusScope.of(context).requestFocus(rncFocusNode);
           _methodPay = 0;
           _rnc = 0;
@@ -262,6 +262,7 @@ class _FormNcfState extends State<FormNcf> {
                                   _mpay[1].isSelected = false;
                                   _monto = 0.0;
                                   montoC.text = '';
+                                  validate = false;
                                 });
                                 if (valor.length == 9 || valor.length == 11) {
                                   setState(() {

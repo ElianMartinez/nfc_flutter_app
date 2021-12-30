@@ -26,36 +26,37 @@ class _PrintTicketState extends State<PrintTicket> {
     super.initState();
     body();
   }
+
   void body() async {
-      try {
-        await printC.printT(dataTikect);
-        Navigator.pop(context);
-      } on Exception catch (_) {
-        showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-                  title: Text(
-                      "La impresora está desconectada. Quiere intentar de nuevo."),
-                  actions: [
-                    FlatButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          body();
-                        },
-                        child: Text("Si")),
-                    FlatButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                        child: Text("No"))
-                  ],
-                ));
-      }
+    try {
+      await printC.printT(dataTikect);
+      Navigator.pop(context);
+    } on Exception catch (_) {
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                title: Text(
+                    "La impresora está desconectada. Quiere intentar de nuevo."),
+                actions: [
+                  FlatButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        body();
+                      },
+                      child: Text("Si")),
+                  FlatButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      child: Text("No"))
+                ],
+              ));
     }
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Imprimir Tikect'),

@@ -7,8 +7,8 @@ class RncService {
  
 
   Future<String> getRNC(int rnc) async {
-    var api_key = await Setting.getAPIKEY();
-     var options = new BaseOptions(
+    api_key = await Setting.getAPIKEY();
+    var options = new BaseOptions(
       receiveDataWhenStatusError: true,
       connectTimeout: 10 * 1000, // 60 seconds
       receiveTimeout: 60 * 1000, // 2min seconds
