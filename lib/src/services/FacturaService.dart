@@ -1,17 +1,16 @@
 import 'package:dio/dio.dart';
-import 'package:ncf_flutter_app/src/models/DataTikect.dart';
 import 'package:ncf_flutter_app/src/setting/settings.dart';
-import 'dart:convert';
+import 'package:ncf_flutter_app/src/models/DataTikect.dart';
 import 'package:intl/intl.dart';
+
 class FacturaServices {
   Dio _dio;
   FacturaServices() {
     init();
   }
   void init() async {
-    var apiKey = await Setting.getAPIKEY();
-    final String baseURL =
-        await Setting.getHost() + "/";
+    final String apiKey = await Setting.getAPIKEY();
+    final String baseURL = await Setting.getHost() + ("/");
     BaseOptions options = new BaseOptions(
         baseUrl: (baseURL),
         receiveDataWhenStatusError: true,
@@ -23,28 +22,28 @@ class FacturaServices {
   }
 
   Future<DataTikect> Create_Factura(
-      String rnc, String nombre, double monto, int id_m_p) async {
+      String rnc, String nombre, double monto, int idMP) async {
     Map<String, dynamic> data = new Map<String, dynamic>();
     final f = DateTime.now();
-   final fecha = '$f';
+    final fecha = '$f';
     data = {
       "id_t_n": 2,
       "rnc": rnc,
       "nombre": nombre,
       "monto": monto,
       "id_sucursal": int.parse(await Setting.getIdSucursal()),
-      "id_metodo_pago": id_m_p,
-      "fecha":  fecha,
+      "id_metodo_pago": idMP,
+      "fecha": fecha,
     };
     final String path = "factura/create";
     DataTikect res = DataTikect();
     try {
       Response response = await _dio.post(path, data: data);
-     
       if (response.statusMessage != null) {
         if (response.statusCode == 200) {
           DateTime dt = new DateTime.now();
-          var fechaActual = DateFormat.yMd().add_jm().format(dt);
+          String formattedDate = DateFormat('dd/MM/yyyy KK:mm a').format(dt);
+          var fechaActual = formattedDate;
           var data = response.data['data'];
           res.nombreCliente = nombre;
           res.nombreEmpresa = data['company_name'];
@@ -58,12 +57,12 @@ class FacturaServices {
           res.direccionSucursal = data['direccion_sucursal'];
           res.telSucursal = data['telefono_sucursal'];
           res.nombreTipo = data['nametipo'];
-          await Setting.setRecibo(json.encode(res.toJson()));
+          List<String> fven = data['fechaVence'].split("T")[0].split("-");
+          res.fechaVence = '${fven[2]}/${fven[1]}/${fven[0]}';
           return res;
-        }else {
-           return null;
+        } else {
+          return null;
         }
-
       } else {
         return null;
       }

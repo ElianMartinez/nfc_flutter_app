@@ -11,6 +11,8 @@ class DataTikect {
   String _telSucursal;
   String _rncEmpresa;
   String _nombreEmpresa;
+  String _fechaVence;
+
   DataTikect();
   /* Begin Json methods*/
   Map<String, dynamic> toJson() => {
@@ -26,6 +28,7 @@ class DataTikect {
         "telSucursal": _telSucursal,
         "rncEmpresa": _rncEmpresa,
         "nombreEmpresa": _nombreEmpresa,
+        "fechaVence": _fechaVence
       };
 
   DataTikect.fromJson(Map<String, dynamic> json)
@@ -40,7 +43,8 @@ class DataTikect {
         _direccionSucursal = json["direccionSucursal"],
         _telSucursal = json["telSucursal"],
         _rncEmpresa = json["rncEmpresa"],
-        _nombreEmpresa = json["nombreEmpresa"];
+        _nombreEmpresa = json["nombreEmpresa"],
+        _fechaVence = json["fechaVence"];
 
   /* End Json methods*/
 
@@ -113,6 +117,11 @@ class DataTikect {
 
   set monto(double monto) {
     _monto = monto;
+  }
+
+  String get fechaVence => _fechaVence;
+  set fechaVence(String fecha) {
+    _fechaVence = fecha;
   }
 }
 /* End Getters and Setter */

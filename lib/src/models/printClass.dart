@@ -5,7 +5,7 @@ import 'package:ncf_flutter_app/src/setting/settings.dart';
 
 class PrintC {
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
-  String _devicesMsg ="";
+  String _devicesMsg = "";
   BluetoothDevice _device;
   PrintC();
 
@@ -19,7 +19,6 @@ class PrintC {
           await bluetooth.connect(_device);
         } on Exception catch (_) {
           throw Exception('Some arbitrary error');
-
         }
       }
     }
@@ -37,13 +36,12 @@ class PrintC {
         await Setting.getPrinterName(), await Setting.getPrinteAddress());
     _device = device;
     await _connect();
-   String res = await _Print(tik);
+    String res = await _Print(tik);
     await _disconnect();
     return res;
   }
 
   Future<String> _Print(DataTikect ticket) async {
-    String res = "";
     bool isConnected = await bluetooth.isConnected;
     if (isConnected) {
       await bluetooth.printNewLine();
@@ -54,13 +52,15 @@ class PrintC {
       await bluetooth.printNewLine();
       await bluetooth.printLeftRight(
           "No:${ticket.noFac}", "Fecha: ${ticket.fecha}", 0);
-      await bluetooth.printNewLine();
       await bluetooth.printCustom("CREDITO FISCAL", 1, 1);
+      await bluetooth.printNewLine();
+      await bluetooth.printLeftRight("RNC:", "${ticket.rncCliente}", 1);
+      await bluetooth.printLeftRight("NCF:", "${ticket.ncf}", 1);
       await bluetooth.printLeftRight(
-          "NCF: ${ticket.ncf}", "RNC: ${ticket.rncCliente}", 1);
-      await bluetooth.write("Nombre Empresa: ");
+          "Valido hasta:", "${ticket.fechaVence}", 1);
+      await bluetooth.printLeftRight("Metodo.Pago:", "${ticket.metPago}", 1);
+      await bluetooth.write("Nombre: ");
       await bluetooth.printCustom(ticket.nombreCliente, 0, 0);
-      await bluetooth.printCustom("Metodo.Pag: ${ticket.metPago}", 0, 0);
       await bluetooth.write("__________________________________________");
       await bluetooth.printNewLine();
       await bluetooth.printCustom(
@@ -71,9 +71,7 @@ class PrintC {
       await bluetooth.printNewLine();
       await bluetooth.printNewLine();
     } else {
-        throw Exception('Some arbitrary error');
+      throw Exception('Some arbitrary error');
     }
-
-    
   }
 }
