@@ -22,12 +22,12 @@ class FacturaServices {
   }
 
   Future<DataTikect> Create_Factura(
-      String rnc, String nombre, double monto, int idMP) async {
+      String rnc, String nombre, double monto, int idMP, int tiponcf) async {
     Map<String, dynamic> data = new Map<String, dynamic>();
     final f = DateTime.now();
     final fecha = '$f';
     data = {
-      "id_t_n": 2,
+      "id_t_n": tiponcf,
       "rnc": rnc,
       "nombre": nombre,
       "monto": monto,

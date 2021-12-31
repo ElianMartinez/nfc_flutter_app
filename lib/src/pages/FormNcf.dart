@@ -39,6 +39,8 @@ class _FormNcfState extends State<FormNcf> {
   int _rnc = 0;
   int _methodPay = 0;
   double _monto = 0.0;
+  String dropdownValue = 'B01 Crédio Fiscal';
+  int tipoNcf = 2;
 
   @override
   void initState() {
@@ -60,7 +62,6 @@ class _FormNcfState extends State<FormNcf> {
     setState(() {
       _rnc = 0;
       _methodPay = 0;
-
       _monto = 0.0;
       nombreC.text = "";
       rncC.text = "";
@@ -75,13 +76,17 @@ class _FormNcfState extends State<FormNcf> {
       _request = true;
     });
     DataTikect res = await facturaServices.Create_Factura(
-        _rnc.toString(), nombreC.text, _monto, _methodPay);
+        _rnc.toString(), nombreC.text, _monto, _methodPay, tipoNcf);
     print(res);
     setState(() {
       _request = false;
     });
 
     if (res != null) {
+      setState(() {
+        tipoNcf = 2;
+        dropdownValue = "B01 Crédio Fiscal";
+      });
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -231,6 +236,56 @@ class _FormNcfState extends State<FormNcf> {
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 60.0, bottom: 20.0),
+                            child: DropdownButton<String>(
+                              value: dropdownValue,
+                              isExpanded: true,
+                              hint: Text("Tipo de comprobante"),
+                              icon: const Icon(Icons.arrow_downward),
+                              elevation: 16,
+                              onChanged: (String newValue) {
+                                int val = 2;
+                                switch (newValue) {
+                                  case "B01 Crédio Fiscal":
+                                    {
+                                      val = 2;
+                                    }
+                                    break;
+                                  case "B15 Gubernamentales":
+                                    {
+                                      val = 78;
+                                    }
+                                    break;
+                                  case "B14 Regímenes Especiales":
+                                    {
+                                      val = 77;
+                                    }
+                                    break;
+
+                                  default:
+                                }
+                                setState(() {
+                                  dropdownValue = newValue;
+                                  tipoNcf = val;
+                                });
+                              },
+                              items: <String>[
+                                'B01 Crédio Fiscal',
+                                'B14 Regímenes Especiales',
+                                'B15 Gubernamentales',
+                              ].map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(
+                                    value,
+                                    style: TextStyle(fontSize: 25.0),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
                           TextFormField(
                               focusNode: rncFocusNode,
                               controller: rncC,
